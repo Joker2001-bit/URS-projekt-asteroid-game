@@ -94,15 +94,10 @@ int main(void)
 	MCUCR = _BV(ISC01) | _BV(ISC11);
    	GICR = _BV(INT0) | _BV(INT1);
 	sei();
-	
-
-	uint8_t flag = 0;
 
 	srand(time(NULL));
 
-
 	initialize_lcd();
-
 
 	while (1) {
 		
