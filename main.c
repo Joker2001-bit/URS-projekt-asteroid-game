@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include "SSD1306.h"
 
-uint8_t kom_x;
-uint8_t kom_y;
+uint8_t kom[8][2];
+uint16_t brojKometa;
 uint8_t player_x;
 uint8_t player_y;
 
@@ -23,17 +23,21 @@ void initialize_lcd(void) {
 	// Example:
 	OLED_Init();
 	OLED_Clear();
-
-	kom_x = rand() % 128;
-	kom_y = 0;
+	brojKometa = 1;
+	kom[0][0] = rand() % 122;
+	kom[0][1] = 0;
+	//kom_x = rand() % 128;
+	//kom_y = 0;
 	player_x = 64;
 	player_y = 7;
 }
 
-void draw_screen(uint8_t kx, uint8_t ky, uint8_t px, uint8_t py) {
+void draw_screen(uint8_t kom[][2], uint8_t px, uint8_t py) {
 	OLED_Clear();
-	OLED_SetCursor(ky, kx);
-	OLED_Printf("O");
+	for (uint8_t i = 0; i < brojKometa; i++)
+	{	OLED_SetCursor(kom[i][1], kom[i][0]);
+		OLED_Printf("O");
+	}
 	OLED_SetCursor(py, px);
 	OLED_Printf("x");
 }
@@ -46,23 +50,17 @@ void game_over () {
 	initialize_lcd();
 }
 
-
-
 ISR(INT0_vect) {
 	player_x -= 5;
-
 	if(player_x >= 123) player_x = 0;
 	
 	debounce();
-
 }
 
 ISR(INT1_vect) {
 
 	player_x += 5;
-
 	if(player_x >= 123) player_x = 122;
-
 
 	debounce();
 }
@@ -79,9 +77,9 @@ int main(void)
 	DDRB = 0x00;
 	
 	MCUCR = _BV(ISC01) | _BV(ISC11);
-   	GICR = _BV(INT0) | _BV(INT1);
+	GICR = _BV(INT0) | _BV(INT1);
 	sei();
-
+	
 	srand(time(NULL));
 
 	initialize_lcd();
@@ -89,15 +87,26 @@ int main(void)
 	while (1) {
 		
 
-		if(kom_x >= player_x && kom_x <= (player_x + 4) && (kom_y == player_y)) game_over();
+		for (uint8_t i = 0; i < brojKometa; i++)
+		{	
+			if(kom[i][0] >= (player_x - 4) && kom[i][0] <= (player_x + 4) && (kom[i][1] == player_y)) 
 
+game_over();
+		}
 
-		draw_screen(kom_x, kom_y, player_x, player_y);
+		draw_screen(kom, player_x, player_y);
 
-		kom_y++;
-		if(kom_y == 8){
-			kom_y = 0;
-			kom_x = rand() % 128;
+		for (uint8_t i = 0; i < brojKometa; i++)
+		{	kom[i][1]++;
+		}
+		if(kom[0][1] == 8){
+			
+			if (brojKometa <= 7) brojKometa++;
+			
+			for (uint8_t i = 0; i < brojKometa; i++)
+			{	kom[i][1] = 0;
+				kom[i][0] = rand() % 122;
+			}
 		}
 		
 	}
