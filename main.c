@@ -18,19 +18,6 @@ void delay(uint16_t timeout) {
 	}
 }
 
-void change(uint8_t x) {
-	if(x == 1) {
-		player_x -= 5;
-
-		if(player_x >= 123) player_x = 0;
-	}
-	if(x == 2) {
-		player_x += 5;
-
-		if(player_x >= 123) player_x = 122;
-	}
-}
-
 void initialize_lcd(void) {
 	// Initialize LCD here
 	// Example:
