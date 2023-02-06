@@ -6,8 +6,10 @@
 #include <stdlib.h>
 #include "SSD1306.h"
 
-uint8_t kom[8][2];
+uint8_t kom[10][2];
 uint16_t brojKometa;
+int brojSerija;
+int highScore = 0;
 uint8_t player_x;
 uint8_t player_y;
 
@@ -18,16 +20,26 @@ void delay(uint16_t timeout) {
 	}
 }
 
+void initialize_first_screen(void) {
+
+	OLED_Init();
+	OLED_Clear();
+	OLED_SetCursor(2, 32);
+	OLED_Printf("Welcome to");
+	OLED_SetCursor(4, 34);
+	OLED_Printf("Asteroids!");
+	delay(3000);
+	
+}
+
 void initialize_lcd(void) {
-	// Initialize LCD here
-	// Example:
+	
 	OLED_Init();
 	OLED_Clear();
 	brojKometa = 1;
+	brojSerija = 0;
 	kom[0][0] = rand() % 122;
 	kom[0][1] = 0;
-	//kom_x = rand() % 128;
-	//kom_y = 0;
 	player_x = 64;
 	player_y = 7;
 }
@@ -43,9 +55,12 @@ void draw_screen(uint8_t kom[][2], uint8_t px, uint8_t py) {
 }
 
 void game_over () {
+	if (brojSerija > highScore) highScore = brojSerija;
 	OLED_Clear();
-	OLED_SetCursor(3, 36);
+	OLED_SetCursor(2, 36);
 	OLED_Printf("Game over");
+	OLED_SetCursor(6, 25);
+	OLED_Printf("High score: %d", highScore);
 	_delay_ms(2000);
 	initialize_lcd();
 }
@@ -73,25 +88,22 @@ void debounce() {
 
 int main(void)
 {
-	PORTB = _BV(0) | _BV(1);
-	DDRB = 0x00;
 	
 	MCUCR = _BV(ISC01) | _BV(ISC11);
 	GICR = _BV(INT0) | _BV(INT1);
 	sei();
 	
 	srand(time(NULL));
+	
+	initialize_first_screen();
 
 	initialize_lcd();
 
 	while (1) {
 		
-
 		for (uint8_t i = 0; i < brojKometa; i++)
-		{	
-			if(kom[i][0] >= (player_x - 4) && kom[i][0] <= (player_x + 4) && (kom[i][1] == player_y)) 
-
-game_over();
+		{
+			if(kom[i][0] >= (player_x - 4) && kom[i][0] <= (player_x + 4) && (kom[i][1] == player_y)) game_over();
 		}
 
 		draw_screen(kom, player_x, player_y);
@@ -101,11 +113,19 @@ game_over();
 		}
 		if(kom[0][1] == 8){
 			
+			brojSerija++;
+			
 			if (brojKometa <= 7) brojKometa++;
 			
-			for (uint8_t i = 0; i < brojKometa; i++)
+			for (int i = 0; i < brojKometa; i++)
 			{	kom[i][1] = 0;
 				kom[i][0] = rand() % 122;
+				if(i > 0){
+					for (int j = i-1; j >= 0; j--)
+					{
+						if(kom[i][0] >= kom[j][0]-3 && kom[i][0] <= kom[j][0]+3) kom[i][0] = (kom[i][0] +10) % 122;
+					}
+				}
 			}
 		}
 		
