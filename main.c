@@ -9,7 +9,6 @@
 uint8_t kom[10][2];
 uint16_t brojKometa;
 int brojSerija;
-int faze = 0;
 int isButtonClicked = 0;
 int highScore[3] = {0, 0, 0};
 uint8_t player_x;
